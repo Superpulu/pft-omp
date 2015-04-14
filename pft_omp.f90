@@ -91,7 +91,8 @@ DO i=1,num_lines
   ! get thread number
   id = omp_get_thread_num ( )
   WRITE ( *, * ) ' Thread ', id, ' has started iteration ', i
-  ! read values of thread id, latitude, longitude, foliar and wood carbon into character variables that will form part of call to R script
+  ! read values of thread id, latitude, longitude, foliar and wood carbon into character 
+  ! variables that will form part of call to R script
   WRITE(plotID,'(i10)')i
   WRITE(threadID,'(i10)') id
   WRITE(latchar,'(f16.13)')lat(i)
