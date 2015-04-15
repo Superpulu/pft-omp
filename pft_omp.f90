@@ -113,9 +113,9 @@ DO i=1,num_lines
   
   ! exec = the call to R script update_config.R: will update config file for SPA runs 
   ! with correct info on lat/lon and driver path
-  exec = TRIM("R --vanilla --slave --args")//" "//TRIM(latchar)//" "//TRIM(lonchar)//" "//TRIM(driver(i))//" &
-      "//TRIM(species(i))//" "//TRIM(threadID)//" "//TRIM(plotID)//" "//TRIM(Cfolchar)//" "//TRIM(Cwoodchar)//" &
-      "//TRIM(capacchar)//" "//TRIM(gplantchar)//" "//TRIM(heightchar)//" "//TRIM(leafNchar)//" "//TRIM(LMAchar)//" &
+  exec = TRIM("R --vanilla --slave --args")//"      "//TRIM(latchar)//"    "//TRIM(lonchar)//"   "//TRIM(driver(i))//" &
+      "//TRIM(species(i))//" "//TRIM(threadID)//"   "//TRIM(plotID)//"     "//TRIM(Cfolchar)//"  "//TRIM(Cwoodchar)//" &
+      "//TRIM(capacchar)//"  "//TRIM(gplantchar)//" "//TRIM(heightchar)//" "//TRIM(leafNchar)//" "//TRIM(LMAchar)//"   &
       "//TRIM("<update_config.R")
   CALL system(exec)
 
