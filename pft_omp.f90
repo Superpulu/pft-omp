@@ -14,7 +14,8 @@ integer :: i,id,status,num_lines, nyears
 
 character(len=1) :: pft_var
 character(len=5) :: scenario
-character(len=100) :: plotID,threadID,header,line,latchar,lonchar,Cfolchar,Cwoodchar,capacchar,gplantchar,heightchar,leafNchar,LMAchar
+character(len=100) :: plotID,threadID,header,line,latchar,lonchar,Cfolchar,Cwoodchar
+character(len=100) :: capacchar,gplantchar,heightchar,leafNchar,LMAchar
 character(len=300) :: exec ! longer character variable, as it contains call to R script
 character(len=5),dimension(5) :: scenarios ! = (/ "R/","C_A2/","C_B2/","E_A2/","E_B2/" /)
 character(len=100),dimension(:),allocatable :: driver, species
@@ -70,20 +71,24 @@ allocate( lat( num_lines ) , &
 ! rewind plots file for reading data
 rewind(11)
 
-read(unit=11, fmt=*) header ! read header out of the way
+! read header out of the way
+read(unit=11, fmt=*) header 
 
 ! read the data line by line into corresponding variables
 do i = 1 , num_lines
-   read(11,fmt=*) lat(i),lon(i),driver(i),species(i),Cfol(i),Cwood(i),capac(i),gplant(i),height(i),leafN(i),LMA(i) 
+   read(11,fmt=*) lat(i),lon(i),driver(i),species(i),Cfol(i),Cwood(i), &
+      capac(i),gplant(i),height(i),leafN(i),LMA(i) 
 enddo
 
 WRITE(*,*)
 
 ! all plot coordinates, driver names, and species have now been read into their corresponding variables
+
 ! parallel section of code starts here
 
 !$OMP PARALLEL &
-!$OMP PRIVATE ( i , id , plotID , threadID , exec , latchar , lonchar , Cfolchar, Cwoodchar , capacchar,gplantchar,heightchar,leafNchar,LMAchar)
+!$OMP PRIVATE ( i , id , plotID , threadID , exec , latchar , lonchar , Cfolchar, Cwoodchar , &
+   capacchar , gplantchar , heightchar , leafNchar , LMAchar )
 !$OMP DO SCHEDULE( GUIDED ) ! or DYNAMIC
 
 DO i=1,num_lines
@@ -91,6 +96,7 @@ DO i=1,num_lines
   ! get thread number
   id = omp_get_thread_num ( )
   WRITE ( *, * ) ' Thread ', id, ' has started iteration ', i
+  
   ! read values of thread id, latitude, longitude, foliar and wood carbon into character 
   ! variables that will form part of call to R script
   WRITE(plotID,'(i10)')i
@@ -104,7 +110,9 @@ DO i=1,num_lines
   WRITE(heightchar,'(f5.2)')height(i)
   WRITE(leafNchar,'(f4.2)')leafN(i)
   WRITE(LMAchar,'(f5.1)')LMA(i)
-  ! exec = the call to R script update_config.R: will update config file for SPA runs with correct info on lat/lon and driver path
+  
+  ! exec = the call to R script update_config.R: will update config file for SPA runs 
+  ! with correct info on lat/lon and driver path
   exec = TRIM("R --vanilla --slave --args")//" "//TRIM(latchar)//" "//TRIM(lonchar)//" "//TRIM(driver(i))//" "//TRIM(species(i))//" "//TRIM(threadID)//" "//TRIM(plotID)//" "//TRIM(Cfolchar)//" "//TRIM(Cwoodchar)//" "//TRIM(capacchar)//" "//TRIM(gplantchar)//" "//TRIM(heightchar)//" "//TRIM(leafNchar)//" "//TRIM(LMAchar)//" "//TRIM("<update_config.R")
   CALL system(exec)
 
@@ -128,7 +136,7 @@ ENDDO ! end of loop over sites
 ! call R script to read model output and create statistical summary files
 CALL system('R --vanilla < ../scripts/create_output_files.R')
 
-! calculate total compution time
+! calculate total computation time
 wtime = OMP_get_wtime() - wtime
 WRITE(*,*) wtime(1)
 
